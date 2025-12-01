@@ -1,14 +1,3 @@
-¡Tienes toda la razón! Mil disculpas. Cometí un error de JavaScript en el código anterior.
-
-Puse una línea de código que escucha el "movimiento" de la galaxia (controls.addEventListener) en el lugar incorrecto (la puse antes de que la galaxia se creara). Esto "rompió" todo el script e impidió que la galaxia se cargara. Por eso solo veías el fondo negro y el reproductor.
-
-Ya lo corregí. Eliminé la línea que causaba el error y dejé la que estaba en el lugar correcto (dentro del código de la galaxia).
-
-Aquí tienes el código completo y corregido. Este debería funcionar perfectamente: la galaxia se verá, y la música sonará en cuanto ella toque la pantalla, mueva la galaxia o presione una tecla.
-
-Código Corregido
-HTML
-
 <!doctype html>
 <html lang="es">
 <head>
@@ -73,15 +62,16 @@ HTML
 </head>
 <body>
 <canvas id="galaxy-canvas"></canvas>
-<div class="pill">Te Amo Muchote Mi Pinchecha Hermosa💛</div>
+<div class="pill">feliz cumpleaños 
+                      mi:  💛</div>
 <div class="attribution" style="left: 10px; transform: none;">Creado para Barby, mi universo 💫</div>
 <div id="err" class="error"></div>
 
 <div class="player">
-  <button id="playBtn">▶︎</button>
-  <span style="font-size:12px;opacity:.9; margin-left: 4px;">musica chida 🎶</span>
+  <button id="playBtn" title="Reproducir/Pausar música" aria-label="Reproducir o pausar la música">▶︎</button>
+  
   <audio id="audio" preload="auto" loop>
-    <source src="505 - Arctic Monkeys __español•lyrics__(MP3_160K).mp3" type="audio/mpeg">
+    <source src="5.mp3" type="audio/mpeg">
   </audio>
 </div>
 
@@ -96,7 +86,9 @@ function showError(msg){ err.textContent = msg; err.style.display='block'; }
 const audio = document.getElementById('audio');
 const playBtn = document.getElementById('playBtn');
 
-playBtn.onclick = async () => {
+playBtn.onclick = async (e) => {
+  // Marcamos la interacción manualmente para que no se duplique
+  hasInteracted = true; 
   try { 
     if (audio.paused) { 
       await audio.play(); 
@@ -112,7 +104,15 @@ playBtn.onclick = async () => {
 // --- INICIO: Reproducir con la primera interacción ---
 let hasInteracted = false;
 
-async function startMusicOnInteraction() {
+async function startMusicOnInteraction(event) { // <-- Se añade 'event'
+  // --- INICIO: CORRECCIÓN DE BUG ---
+  // Si la interacción fue en el botón de Play, no hagas nada aquí.
+  // Se deja que el 'onclick' propio del botón (arriba) maneje la lógica.
+  if (event && (event.target === playBtn || playBtn.contains(event.target))) {
+    return;
+  }
+  // --- FIN: CORRECCIÓN DE BUG ---
+
   if (hasInteracted || !audio.paused) return; 
   hasInteracted = true;
   try {
@@ -152,12 +152,8 @@ controls.enableDamping = true; controls.dampingFactor = 0.06;
 controls.minDistance = 10; controls.maxDistance = 220;
 controls.target.set(0,0,0);
 
-// --- INICIO: CORRECCIÓN ---
-// Esta es la línea que faltaba mover.
-// Ahora escucha el "arrastre" de la galaxia para iniciar la música.
+// Esta línea escucha el "arrastre" de la galaxia para iniciar la música.
 controls.addEventListener('start', startMusicOnInteraction, { once: true, passive: true });
-// --- FIN: CORRECCIÓN ---
-
 
 // Camera default
 function setCam(){
@@ -205,14 +201,14 @@ scene.add(bg);
 // Galaxy
 const galaxy = new THREE.Group(); scene.add(galaxy);
 const phrases = [
-  "Pinchecha ✨", "Hermosa 💛", "Mi Bebe", "Mi Cielito 🌌", "Hermosota ✨", "Mi Infinita ♾️",
-  "Mi Todo", "Me Encantas 🥰", "barby 💫", "Te Amo💛", "Mi Canción Favorita 🎶", "Unica 😊",
-  "Mi Reina 👑", "Mi Amor", "Mi Mundo", "Mi Luz 🌠", "Mi Niña", "Mi Tesoro💛", "Mi Paz",
-  "Mi Eterna", "Mi Sueño", "Mi Pensamiento Favorito", "Mi Bombom", "Mi Diosa", "Te Amo Infinitamente ♾️",
-  "Eres mi universo 🌌", "Mi constelación favorita 🌠", "Brillas más que mil estrellas ✨",
-  "Contigo todo es magia 💖", "El amor de mi vida 👑", "Mi casualidad más bonita 🥰",
-  "Juntos para siempre ♾️", "Mi corazón es tuyo 💛", "Mi lugar feliz 😊", "Eres mi magia 💫",
-  "Mi ancla ⚓", "Mi destino", "Solo tú 💖", "Nuestra galaxia 🌌", "Te elijo a ti 💛"
+  "Pinchecha ✨", "Hermosa 💛", "amiga", "enana 🌌", "Hermosota ✨", "pendeja ♾️",
+  "enojona", "mordida 🥰", "barby 💫", "Amor💛", "el pepe", "Unica 😊",
+  "Reina 👑", " Amor", "mamasita", "agua 🌠", "Niña", "Mi amigis💛", "Mi estres",
+  "marcadora", "chido", "persona linda", "Bombom", "favorita", "bola 8 ♾️",
+  "un universo 🌌", "una constelación 🌠", "Brillas más que mil estrellas ✨",
+  "bruja 💖", "pendeja x2 👑", "Mi casualidad más bonita 🥰",
+  "Juntos para siempre ♾️", " amor de lopez 💛", "Mi lugar de estres 😊", "Eres mi magia negra 💫",
+  "Mi ancla ⚓", "Mi destino final", "Solo tú 💖", "Nuestra galaxia 🌌", "Te elijo a ti como pokemon 💛"
 ];
 
 const phraseCount = Math.max(phrases.length * 6, 200);
@@ -240,17 +236,41 @@ function makeTextTexture(text, size=48, index=0){
   return new THREE.CanvasTexture(c);
 }
 
-for(let i=0;i<phraseCount;i++){ const text = phrases[i%phrases.length];
+// --- MEJORA: Se añadieron comentarios para explicar la lógica ---
+for(let i=0; i < phraseCount; i++){ 
+  const text = phrases[i % phrases.length];
   const tex = makeTextTexture(text, 48, i);
-  const spr=new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true, depthWrite:false, blending: THREE.AdditiveBlending }));
-  spr.isPhrase=true;
-  const perArm=phraseCount/arms; const ang=(i%perArm)*(Math.PI*2/perArm);
-  const armAng=Math.floor(i/perArm)*(Math.PI*2/arms);
-  const dist=Math.pow(i/phraseCount,0.72)*radius;
-  const thickness=Math.pow(1-(dist/radius),2);
-  const x=Math.cos(ang+armAng)*dist, z=Math.sin(ang+armAng)*dist, y=(Math.random()-0.5)*maxH*thickness*.9;
-  spr.position.set(x,y,z); spr.scale.set(20,2.6,1); galaxy.add(spr);
+  
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ 
+    map: tex, 
+    transparent: true, 
+    depthWrite: false, 
+    blending: THREE.AdditiveBlending 
+  }));
+  spr.isPhrase = true;
+  
+  // --- Lógica de la galaxia espiral ---
+  // Asigna la palabra a uno de los 'brazos'
+  const perArm = phraseCount / arms;
+  const ang = (i % perArm) * (Math.PI * 2 / perArm); // Ángulo dentro del brazo
+  const armAng = Math.floor(i / perArm) * (Math.PI * 2 / arms); // Ángulo del brazo
+  
+  // La distancia desde el centro (más denso en el centro)
+  const dist = Math.pow(i / phraseCount, 0.72) * radius;
+  
+  // Grosor vertical (más grueso cerca del centro)
+  const thickness = Math.pow(1 - (dist / radius), 2);
+  
+  // Calcular posición (X, Y, Z)
+  const x = Math.cos(ang + armAng) * dist;
+  const z = Math.sin(ang + armAng) * dist;
+  const y = (Math.random() - 0.5) * maxH * thickness * 0.9;
+  
+  spr.position.set(x, y, z); 
+  spr.scale.set(20, 2.6, 1); // Escalar el sprite de texto
+  galaxy.add(spr);
 }
+// --- Fin de la mejora ---
 
 // Galaxy stars
 const starCount=8000, geom=new THREE.BufferGeometry(), pos=new Float32Array(starCount*3);
